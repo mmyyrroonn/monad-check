@@ -64,7 +64,7 @@ const App = () => {
                     Follow me on 𝕏 @moshuishapaozi
                 </a>
             </div>
-            <h1 className="title">MONAD Balance Checker</h1>
+            <h1 className="title">MONAD Test Balance Checker</h1>
             <div className="input-area">
                 <div className="input-label">
                     <span className="text-gray-600">Input Addresses</span>
