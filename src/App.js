@@ -66,11 +66,18 @@ const App = () => {
             </div>
             <h1 className="title">MONAD Balance Checker</h1>
             <div className="input-area">
+                <div className="input-label">
+                    <span className="text-gray-600">Input Addresses</span>
+                    <span className="text-sm text-gray-500">(one address per line)</span>
+                </div>
                 <textarea
                     className="textarea"
                     value={addresses}
                     onChange={(e) => setAddresses(e.target.value)}
-                    placeholder="Enter addresses, one per line"
+                    placeholder={`Example:
+0x1234...5678
+0xabcd...efgh
+0x9876...5432`}
                     disabled={isChecking}
                 />
                 <button 

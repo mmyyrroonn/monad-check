@@ -42,9 +42,14 @@ p {
   @apply mb-6;
 }
 
+.input-label {
+    @apply flex justify-between items-center mb-2;
+}
+
 .textarea {
   @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent;
   min-height: 120px;
+  font-family: monospace;
 }
 
 .button {
