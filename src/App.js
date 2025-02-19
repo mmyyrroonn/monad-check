@@ -10,18 +10,9 @@ const App = () => {
 
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-    const checkBalances = async () => {
-        setIsChecking(true);
-        const addressList = addresses.split('\n').map(addr => addr.trim()).filter(addr => addr);
-        
-        // 清空之前的结果
-        setResults([]);
-
-        for (const address of addressList) {
+    const fetchWithRetry = async (address, retries = 2) => {
+        for (let i = 0; i <= retries; i++) {
             try {
-                // 添加1秒延迟
-                await delay(1000);
-                
                 const response = await fetch(`https://monad-api.blockvision.org/testnet/api/account/tokenPortfolio?address=${address}`, {
                     headers: {
                         "accept": "application/json",
@@ -29,21 +20,50 @@ const App = () => {
                         "referer": "https://testnet.monadexplorer.com/"
                     }
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 const monToken = data.result.data.find(token => token.symbol === 'MON');
-                const balance = monToken ? monToken.balance : 'N/A';
-                
-                // 实时更新结果
-                setResults(prev => [...prev, { address, balance, status: 'success' }]);
+                return { balance: monToken ? monToken.balance : 'N/A', status: 'success' };
             } catch (error) {
-                setResults(prev => [...prev, { address, balance: 'Error fetching balance', status: 'error' }]);
+                if (i === retries) {
+                    return { balance: `Error fetching balance (${retries + 1} attempts)`, status: 'error' };
+                }
+                // 在重试之前等待越来越长的时间
+                await delay(1000 * (i + 1));
+                continue;
             }
         }
+    };
+
+    const checkBalances = async () => {
+        setIsChecking(true);
+        const addressList = addresses.split('\n').map(addr => addr.trim()).filter(addr => addr);
+        setResults([]);
+
+        for (const address of addressList) {
+            await delay(1000); // 添加1秒延迟
+            const result = await fetchWithRetry(address);
+            setResults(prev => [...prev, { 
+                address, 
+                balance: result.balance, 
+                status: result.status 
+            }]);
+        }
+        
         setIsChecking(false);
     };
 
     return (
         <div className="app-container">
+            <div className="twitter-banner">
+                <a href="https://x.com/moshuishapaozi" target="_blank" rel="noopener noreferrer" className="twitter-link">
+                    Follow me on 𝕏 @moshuishapaozi
+                </a>
+            </div>
             <h1 className="title">MONAD Balance Checker</h1>
             <div className="input-area">
                 <textarea
