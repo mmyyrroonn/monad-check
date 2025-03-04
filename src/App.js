@@ -1,5 +1,6 @@
 import React, { useState, lazy, Suspense } from 'react';
 import './styles.css';
+import Web3 from 'web3';
 
 const ResultItem = lazy(() => import('./components/ResultItem'));
 
@@ -13,21 +14,10 @@ const App = () => {
     const fetchWithRetry = async (address, retries = 2) => {
         for (let i = 0; i <= retries; i++) {
             try {
-                const response = await fetch(`https://monad-api.blockvision.org/testnet/api/account/tokenPortfolio?address=${address}`, {
-                    headers: {
-                        "accept": "application/json",
-                        "origin": "https://testnet.monadexplorer.com",
-                        "referer": "https://testnet.monadexplorer.com/"
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                const monToken = data.result.data.find(token => token.symbol === 'MON');
-                return { balance: monToken ? monToken.balance : 'N/A', status: 'success' };
+                const web3 = new Web3('https://testnet-rpc.monad.xyz');
+                const balance = await web3.eth.getBalance(address);
+                const formattedBalance = web3.utils.fromWei(balance, 'ether');
+                return { balance: formattedBalance, status: 'success' };
             } catch (error) {
                 if (i === retries) {
                     return { balance: `Error fetching balance (${retries + 1} attempts)`, status: 'error' };
